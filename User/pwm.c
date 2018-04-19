@@ -31,7 +31,7 @@ void PWM_Config(void)
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;		//配置为PWM模式1  
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;                
 	TIM_OCInitStructure.TIM_Pulse = 0;		//设置跳变值，当计数器计数到这个值时，电平发生跳变  
-	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;		//当定时器计数值小于CCR1时为高电平  
+	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low ;		//当定时器计数值小于CCR3时为低电平  
 	TIM_OC1Init(TIM2, &TIM_OCInitStructure);
 
 	//预装载使能	
@@ -46,8 +46,8 @@ void PWM_Config(void)
 
 void MotorPwmFlash(int16_t MOTO_PWM)
 {		
-	if(MOTO_PWM>=Moto_PwmMax)	MOTO_PWM = Moto_PwmMax;
-	if(MOTO_PWM<=0)	MOTO_PWM = 0;		//限定输入不能小于0，大于999
+	if(MOTO_PWM>Moto_PwmMax)	MOTO_PWM = Moto_PwmMax;
+	if(MOTO_PWM<0)	MOTO_PWM = 0;		//限定输入不能小于0，大于999
     
     TIM2->CCR1 = MOTO_PWM;        //对定时器寄存器赋值
 }

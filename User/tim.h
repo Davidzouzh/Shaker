@@ -4,8 +4,8 @@
 #include "stm32f10x.h"
 
 extern uint16_t freq;
-extern uint16_t BasePWM[6];
 
+extern float ActualFreq;
 
 void TIM3_Config(void);//输入捕获用定时器
 void TIM4_Config(void);//定时100ms定时器

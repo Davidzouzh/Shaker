@@ -14,7 +14,8 @@
 
 int main(void)
 {
-	uint32_t timeStart=0,min=0,powerFlashtime=0;
+	uint32_t timeStart=0,min=0;
+	//uint32_t powerFlashtime=0;
 	
 	SysTick_Init();										//系统时钟及滴答定时器初始化
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);		//设置中断优先级分组2
@@ -41,7 +42,7 @@ int main(void)
 	delay_ms(1000);
 	OLED_Clear();
 	
-	while(BatteryVal <= 10.0)		//开机电量检查，低电量则不允许工作
+	while(BatteryVal <= 10.3)		//开机电量检查，低电量则不允许工作
 	{
 		OLED_ShowCHinese(24,3,17,24);//“低”
 		OLED_ShowCHinese(48,3,18,24);//“电”
@@ -278,7 +279,7 @@ int main(void)
 	//电量监测
 		Get_BatteryVal();
 
-		if(BatteryVal <= 10.0)		//如果电压低于10V，则认为低电量了，
+		if(BatteryVal <= 10.3)		//如果电压低于10.3V，则认为低电量了，
 		{
 			OLED_ShowCHinese(0,6,17,16);//“低”
 			OLED_ShowCHinese(16,6,18,16);//“电”
@@ -286,12 +287,12 @@ int main(void)
 			OLED_ShowString(48,6,"..",16);
 		}
 		
-		if( (millis() - powerFlashtime) > 1000)
-		{
-			powerFlashtime = millis();
-			OLED_ShowNum(0,6,BatteryVal*100,4,16);
-			OLED_ShowNum(40,6,ActualFreq*100,3,16);
-		}
+		// if( (millis() - powerFlashtime) > 1000)
+		// {
+			// powerFlashtime = millis();
+			// OLED_ShowNum(0,6,BatteryVal*100,4,16);
+			// OLED_ShowNum(40,6,ActualFreq*100,3,16);
+		// }
 		
 		
 	}

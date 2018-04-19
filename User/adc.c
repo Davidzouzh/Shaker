@@ -41,17 +41,22 @@ float BatteryVal=0.0;
 
 void Get_BatteryVal(void)
 {
-	uint16_t adc;
+	uint8_t i;
+	uint32_t adc=0;
 	
-	ADC_SoftwareStartConvCmd(ADC1, ENABLE);		//使能指定的ADC1的软件转换启动功能
-	while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));		//等待转换结束
+	for(i=0;i<5;i++)
+	{
+		ADC_SoftwareStartConvCmd(ADC1, ENABLE);		//使能指定的ADC1的软件转换启动功能
+		while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));		//等待转换结束
 	
-	adc = ADC_GetConversionValue(ADC1);
+		adc += ADC_GetConversionValue(ADC1);
+	}
+	adc = adc/5;
 	
 	BatteryVal = 13.66*adc/4096;
 	//BatteryVal = 3.26*adc/4096*(15.0+4.7)/4.7;
 	
-	BatteryVal = BatteryVal*10;
+	BatteryVal = BatteryVal;
 	
 }
 

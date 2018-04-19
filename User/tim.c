@@ -65,9 +65,9 @@ void TIM3_IRQHandler(void)
 		TIM3->CNT = 0;
 		//TIM_SetCounter(TIM3,0);
 		
-		ActualFreq = 1000000.0/(TIM3CH3_CAPTURE_VAL*24*40);
+		ActualFreq = 1000000.0/(TIM3CH3_CAPTURE_VAL*24*65);
 		
-		ActualFreq = ActualFreq*10;
+		//ActualFreq = ActualFreq*10;
 	}
 
 	// if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)
@@ -92,7 +92,7 @@ void TIM4_Config(void)
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
     
     TIM_DeInit(TIM4);
-    TIM_TimeBaseStructure.TIM_Period = 10000-1;	//72Mhz/10000/720=10Hz 定时100ms
+    TIM_TimeBaseStructure.TIM_Period = 2000-1;	//72Mhz/2000/720=50Hz 定时20ms
     TIM_TimeBaseStructure.TIM_Prescaler = 720-1;
     TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1; 
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
@@ -112,53 +112,73 @@ void TIM4_Config(void)
 }
 
 
-uint16_t SetFreq = 0;
+uint8_t Freq_Num = 0;
 
-const uint16_t BasePWM[6]={999,560,620,800,850,900};
-const uint16_t spdTag[6]={0,41667,20833,8333,4167,2779};
+const uint16_t BasePWM[12]={0,160,210,260,310,360,410,460,510,560,625,660};
+const float DesiredFreq[12]={0,0.2+0.03,0.3+0.03,0.4+0.03,0.5+0.05,0.6+0.04,0.7+0.04,0.8+0.05,0.9+0.025,1.0+0.045,1.1+0.02,1.2+0.02};
 
-uint16_t spdNow;
+float errNow=0;
+float errOld=0,errOld2=0,errOld3=0;
+float P,I,D;
 
-int32_t errNow=0;
-int32_t errOld=0,errOld2=0,errOld3=0;
-int32_t P,I,D;
+const float kp = 150.0;
+const float ki = 80.0;
+const float kd = 150.0;
+const float errILim = 1000.0;
 
-uint16_t PWMValue;
-
-const uint16_t kp = 15;
-const uint16_t ki = 15;
-const uint16_t kd = 15;
-const uint16_t errILim = 1000;
-
-
+uint16_t PWMValue=0;
 
 void TIM4_IRQHandler(void)
 {
 	if( TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET ) 
     {
-		spdNow = TIM3CH3_CAPTURE_VAL;	//当前速度
-		
-		errNow = spdNow - spdTag[SetFreq];	//速度差值
-		P = errNow;
-		I = errNow+errOld+errOld2+errOld3;
-		D = errNow-errOld;
-		
-		if(errILim != 0)	//微分限制
+		if(key_start == isON)
 		{
-			if(I > errILim)
-				I = errILim;
-			else if(I < -errILim)
-				I = -errILim;
-		}
-
-		PWMValue += (uint16_t)(kp*P+ki*I+kd*D);	//计算PWM值
-
-		MotorPwmFlash(360);	//输出PWM波控制电机
+			errNow = DesiredFreq[Freq_Num] - ActualFreq;	//速度差值
 		
-		errOld = errNow;	//误差更新
-		errOld2 = errOld;
-		errOld3 = errOld2;
+			P = errNow;
+			I = errNow+errOld+errOld2+errOld3;
+			D = errNow-errOld;
+			
+			if(errILim != 0)	//微分限制
+			{
+				if(I > errILim)
+					I = errILim;
+				else if(I < -errILim)
+					I = -errILim;
+			}
+
+			PWMValue += (int32_t)(kp*P+ki*I+kd*D);	//计算PWM值
+
+			MotorPwmFlash(PWMValue);	//输出PWM波控制电机
+			
+			errOld = errNow;	//误差更新
+			errOld2 = errOld;
+			errOld3 = errOld2;
+		}
+		else
+		{
+			MotorPwmFlash(0);
+		}
 
 		TIM_ClearITPendingBit(TIM4, TIM_FLAG_Update);   //清除中断标志
 	}	
 }
+
+
+
+void Set_Freq(uint8_t freq)
+{
+	Freq_Num = freq;	//设置工作频率和基础PMW值
+	PWMValue = BasePWM[freq];
+	
+	ActualFreq = DesiredFreq[freq];	//清除上一次运转遗留的值
+	
+	errNow=0;
+	errOld = 0;
+	errOld2 = 0;
+	errOld3 = 0;
+
+}
+
+

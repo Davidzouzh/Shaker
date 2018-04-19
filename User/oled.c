@@ -16,6 +16,7 @@
 #include "spi.h"
 #include "timer.h"
 #include "stdlib.h"
+#include "math.h" 
 
 #include "oledfont.h"
 #include "oledChinese.h"
@@ -160,7 +161,8 @@ u32 oled_pow(u8 m,u8 n)
 //len :数字的位数
 //size:字体大小
 //mode1:正常显示
-//num:数值(0~4294967295);	 		  
+//num:数值(0~4294967295);	 		
+ 
 void OLED_ShowNum(u8 x,u8 y,u32 num,u8 len,u8 size)
 {         	
 	u8 t,temp;
@@ -179,7 +181,29 @@ void OLED_ShowNum(u8 x,u8 y,u32 num,u8 len,u8 size)
 		}
 	 	OLED_ShowChar(x+(size/2)*t,y,temp+'0',size); 
 	}
-} 
+}
+
+void OLED_Show1Numwith1Dot(u8 x,u8 y,float num,u8 size)
+{
+	float second;
+	second = num-floor(num);//小数部分
+	
+	if(size == 16)
+	{
+		OLED_ShowNum(x,y,num,1,16);
+		OLED_ShowChar(x,y+8,'.',16);
+		OLED_ShowNum(x,y+16,second,1,16);
+	}
+	else
+	{
+		OLED_ShowNum(x,y,num,1,24);
+		OLED_ShowChar(x,y+12,'.',24);
+		OLED_ShowNum(x,y+24,second,1,24);
+	}
+	
+	
+}
+
 //显示一个字符号串
 //x:0~127
 //y:0~7

@@ -59,7 +59,7 @@ void KEY_menu_Scan(void)
 		if(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_9) == RESET)
 		{
 			key_menu++;
-			if(key_menu >5)
+			if(key_menu >11)
 				key_menu = 1;
 		}
 	}

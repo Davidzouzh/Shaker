@@ -49,8 +49,9 @@ void TIM3_Config(void)
  
 }
 
-
-uint16_t TIM3CH3_CAPTURE_VAL;	//输入捕获值
+uint16_t Queue_CAPTURE[10];
+uint8_t queueNum=0;
+uint32_t TIM3CH3_CAPTURE_VAL=0;	//输入捕获值
 //1us记一次，一次溢出要记65536us，即65ms，电机的最慢转速0.1HZ也是最久41ms一次捕获
 //电机最快转速1.5HZ，一次捕获约2.7ms
 
@@ -58,9 +59,18 @@ float ActualFreq;
 
 void TIM3_IRQHandler(void)
 {
+	uint8_t i;
 	if (TIM_GetITStatus(TIM3, TIM_IT_CC3) != RESET)//捕获3发生捕获事件
 	{	
-		TIM3CH3_CAPTURE_VAL = TIM3->CCR3;
+		Queue_CAPTURE[queueNum++] = TIM3->CCR3;
+		if(queueNum>=10)
+			queueNum=0;
+		for(i=0;i<10;i++)
+		{
+			TIM3CH3_CAPTURE_VAL += Queue_CAPTURE[i];
+		}	
+		TIM3CH3_CAPTURE_VAL /= 10;
+		
 		//TIM3CH3_CAPTURE_VAL = TIM_GetCapture3(TIM3);
 		TIM3->CNT = 0;
 		//TIM_SetCounter(TIM3,0);
@@ -115,7 +125,7 @@ void TIM4_Config(void)
 uint8_t Freq_Num = 0;
 
 const uint16_t BasePWM[12]={0,160,210,260,310,360,410,460,510,560,625,660};
-const float DesiredFreq[12]={0,0.2+0.03,0.3+0.03,0.4+0.03,0.5+0.05,0.6+0.04,0.7+0.04,0.8+0.05,0.9+0.025,1.0+0.045,1.1+0.02,1.2+0.02};
+const float DesiredFreq[12]={0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.12,1.2};
 
 float errNow=0;
 float errOld=0,errOld2=0,errOld3=0;
@@ -169,10 +179,14 @@ void TIM4_IRQHandler(void)
 
 void Set_Freq(uint8_t freq)
 {
+	uint8_t i;
+	
 	Freq_Num = freq;	//设置工作频率和基础PMW值
 	PWMValue = BasePWM[freq];
 	
 	ActualFreq = DesiredFreq[freq];	//清除上一次运转遗留的值
+	for(i=0;i<10;i++)
+		Queue_CAPTURE[i]=0;
 	
 	errNow=0;
 	errOld = 0;

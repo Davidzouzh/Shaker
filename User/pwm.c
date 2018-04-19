@@ -22,7 +22,7 @@ void PWM_Config(void)
 	//时间基准设置
 	TIM_DeInit(TIM2);
 	TIM_TimeBaseStructure.TIM_Period = 999;  
-	TIM_TimeBaseStructure.TIM_Prescaler = 0;//PWM波频率：72Mhz/1000/1=72Khz	
+	TIM_TimeBaseStructure.TIM_Prescaler = 1;//PWM波频率：72Mhz/1000/2=36Khz	
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;		//设置时钟分频系数：不分频  
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;		//向上计数溢出模式  
 	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);

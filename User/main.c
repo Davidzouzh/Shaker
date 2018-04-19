@@ -1,7 +1,6 @@
 
 #include "stm32f10x.h"
 
-#include "encoder.h"
 #include "key.h"
 #include "oled.h"
 #include "pwm.h"
@@ -28,9 +27,9 @@ int main(void)
 	OLED_ShowCHinese(96,2,4,24);
 	OLED_ShowString(48,6,"power on..",16);
 	
-	TIM3_Config();
-	Encoder_Config();
 	PWM_Config();
+	TIM3_Config();
+	TIM4_Config();
 	KEY_Config();
 	
 	STMFLASH_Read(STM32_FLASH_BASE+STM32_FLASH_OFFEST, &key_menu, 1);//读取出上一次值
